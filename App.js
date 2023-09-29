@@ -29,15 +29,22 @@ import CreateAdScreen from './src/screens/CreateAdScreen';
 import HomeScreen from './src/screens/ListItemScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import AccountScreen from './src/screens/AccountScreen';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme  } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Feather from 'react-native-vector-icons/Feather'
 import auth from '@react-native-firebase/auth';
 
-const Tab = createBottomTabNavigator();
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: 'white',
+  },
+};
 
+const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const AuthNavigator = () => {
   return (
@@ -79,13 +86,14 @@ const TabNavigator = () => {
 const Navigation = () => {
   const [user, setUser] =useState('');
   useEffect(() => {
-    auth().onAuthStateChanged((userExit) => {
+    const unsubscribe = auth().onAuthStateChanged((userExit) => {
       if (userExit) {
         setUser(userExit);
       } else {
         setUser('');
       }
     })
+    return unsubscribe //need to clean up our code while exiting app
   }, [])
   return (
     <NavigationContainer>

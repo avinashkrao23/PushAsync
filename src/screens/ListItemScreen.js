@@ -1,9 +1,11 @@
-import React, {useState} from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Image, Linking, Platform } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
 // import {Avatar,Card,Title,Paragraph,Button} from 'react-native-paper'
 
 const ListItemScreen = () => {
-
+    
+    const [items,setItems] = useState([])
     const myitems = [
         {
             name: "iphone",
@@ -37,6 +39,25 @@ const ListItemScreen = () => {
     //         </Card>
     //     ) 
     // }
+    const getDetails = async () => {
+        const querySnap = await firestore().collection('ads').get()
+        const result = querySnap.docs.map(docSnap => docSnap.data())
+        console.log('result=:',result);
+        setItems(result);
+    }
+
+    useEffect(() => {
+        getDetails();
+        return () => {
+            console.log('cleanup')
+        }
+    },[])
+
+    const openDailer = (phone) => {
+        if (Platform.OS === "android" ) {
+            Linking.openURL(`tel:${phone}`)
+        }
+    }
 
     const renderItem = (title) => {
         return (
@@ -47,9 +68,10 @@ const ListItemScreen = () => {
             <Image source={{uri: title.image}} style={styles.image} />
             <View style={styles.action}>
                 <TouchableOpacity>
-                <Text style={styles.btn}>₹ 100 </Text>
+                <Text style={styles.btn}>₹ {title.price}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity
+                onPress={() => openDailer()}>
                 <Text style={styles.btn}>Call Seller </Text>
                 </TouchableOpacity>
             </View>
@@ -64,9 +86,10 @@ const ListItemScreen = () => {
     return (
         <View>
             <FlatList 
-            data={myitems}
+            data={items}
             keyExtractor={(item) => item.phone}
             renderItem={({item}) => renderItem(item)}
+            inverted
             />
             {/* <Image source={require('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5FKviwZTvMI26YgcRD1fIXb0W5TdncuvoXA&usqp=CAU')}/> */}
             {/* <Image source={{ uri: imageUrl }} style={styles.image} />
